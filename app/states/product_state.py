@@ -1,5 +1,6 @@
 import reflex as rx
 from typing import TypedDict, Literal
+import logging
 
 
 class Product(TypedDict):
@@ -116,6 +117,42 @@ class ProductState(rx.State):
     @rx.var
     def featured_products(self) -> list[Product]:
         return self.products[:4]
+
+    @rx.var
+    def best_selling_products(self) -> list[Product]:
+        """Returns products sorted by number of reviews, descending."""
+        return sorted(self.products, key=lambda p: p["num_reviews"], reverse=True)[:3]
+
+    @rx.event
+    def create_product(self, form_data: dict):
+        """Create a new product from the admin form."""
+        try:
+            new_id = max((p["id"] for p in self.products)) + 1 if self.products else 1
+            original_price_str = form_data.get("original_price")
+            new_product: Product = {
+                "id": new_id,
+                "name": form_data["name"],
+                "sku": form_data["sku"],
+                "price": float(form_data["price"]),
+                "original_price": float(original_price_str)
+                if original_price_str
+                else None,
+                "description": form_data["description"],
+                "images": ["/placeholder.svg"],
+                "category": form_data["category"],
+                "occasion": form_data.get("occasion", "General"),
+                "recipient": form_data.get("recipient", "For All"),
+                "stock": int(form_data["stock"]),
+                "rating": 0.0,
+                "num_reviews": 0,
+            }
+            self.products.append(new_product)
+            yield rx.toast.success(
+                f"Product '{new_product['name']}' created successfully!"
+            )
+        except Exception as e:
+            logging.exception(f"Failed to create product: {e}")
+            yield rx.toast.error(f"Failed to create product: {e}")
 
     @rx.var
     def categories(self) -> list[str]:

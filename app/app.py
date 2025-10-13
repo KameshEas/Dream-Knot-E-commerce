@@ -11,6 +11,7 @@ from app.pages.category import category_page
 from app.pages.cart import cart_page
 from app.pages.checkout import checkout_page
 from app.pages.account import account_page, orders_page, wishlist_page, addresses_page
+from app.pages.admin import admin_page, admin_products_page
 from app.states.auth_state import AuthState
 
 
@@ -132,3 +133,7 @@ app.add_page(account_page, route="/account", on_load=AuthState.check_login)
 app.add_page(orders_page, route="/account/orders", on_load=AuthState.check_login)
 app.add_page(wishlist_page, route="/account/wishlist", on_load=AuthState.check_login)
 app.add_page(addresses_page, route="/account/addresses", on_load=AuthState.check_login)
+app.add_page(admin_page, route="/admin", on_load=AuthState.check_admin)
+app.add_page(
+    admin_products_page, route="/admin/products", on_load=AuthState.check_admin
+)

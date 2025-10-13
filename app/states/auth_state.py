@@ -1,5 +1,5 @@
 import reflex as rx
-from typing import TypedDict
+from typing import TypedDict, Literal
 
 
 class User(TypedDict):
@@ -7,16 +7,25 @@ class User(TypedDict):
     email: str
     password: str
     phone_number: str | None
+    role: Literal["customer", "admin"]
 
 
 class AuthState(rx.State):
     users: dict[str, User] = {
-        "user@example.com": {
-            "full_name": "John Doe",
-            "email": "user@example.com",
-            "password": "password123",
+        "admin@example.com": {
+            "full_name": "Admin User",
+            "email": "admin@example.com",
+            "password": "admin123",
             "phone_number": "123-456-7890",
-        }
+            "role": "admin",
+        },
+        "customer@example.com": {
+            "full_name": "John Doe",
+            "email": "customer@example.com",
+            "password": "password123",
+            "phone_number": "111-222-3333",
+            "role": "customer",
+        },
     }
     logged_in_user: User | None = None
     show_login_toast: bool = False
@@ -24,6 +33,13 @@ class AuthState(rx.State):
     @rx.var
     def is_authenticated(self) -> bool:
         return self.logged_in_user is not None
+
+    @rx.var
+    def is_admin(self) -> bool:
+        return (
+            self.logged_in_user is not None
+            and self.logged_in_user.get("role") == "admin"
+        )
 
     @rx.event
     def signup(self, form_data: dict):
@@ -37,6 +53,7 @@ class AuthState(rx.State):
             "email": email,
             "password": form_data["password"],
             "phone_number": None,
+            "role": "customer",
         }
         self.users[email] = new_user
         self.logged_in_user = new_user
@@ -64,3 +81,9 @@ class AuthState(rx.State):
     def check_login(self):
         if not self.is_authenticated:
             return rx.redirect("/login")
+
+    @rx.event
+    def check_admin(self):
+        if not self.is_admin:
+            yield rx.toast.error("You are not authorized to view this page.")
+            return rx.redirect("/")

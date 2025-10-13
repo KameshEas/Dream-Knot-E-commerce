@@ -67,6 +67,18 @@ def navbar() -> rx.Component:
                 rx.cond(
                     AuthState.is_authenticated,
                     rx.el.div(
+                        rx.cond(
+                            AuthState.is_admin,
+                            rx.el.a(
+                                rx.icon(
+                                    tag="shield-check",
+                                    class_name="h-6 w-6 text-green-600",
+                                ),
+                                href="/admin",
+                                title="Admin Dashboard",
+                            ),
+                            rx.fragment(),
+                        ),
                         rx.el.a(
                             rx.icon(tag="user", class_name="h-6 w-6"), href="/account"
                         ),
