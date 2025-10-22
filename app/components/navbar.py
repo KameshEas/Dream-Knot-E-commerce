@@ -1,6 +1,7 @@
 import reflex as rx
 from app.states.auth_state import AuthState
 from app.states.cart_state import CartState
+from app.states.product_state import ProductState
 
 
 def navbar() -> rx.Component:
@@ -31,20 +32,13 @@ def navbar() -> rx.Component:
                 )
             ),
             rx.el.nav(
-                rx.el.a(
-                    "Birthday",
-                    href="/category/birthday",
-                    class_name="text-[#19325C] hover:text-[#C1A86F] font-medium",
-                ),
-                rx.el.a(
-                    "Anniversary",
-                    href="/category/anniversary",
-                    class_name="text-[#19325C] hover:text-[#C1A86F] font-medium",
-                ),
-                rx.el.a(
-                    "Corporate",
-                    href="/category/corporate",
-                    class_name="text-[#19325C] hover:text-[#C1A86F] font-medium",
+                rx.foreach(
+                    ProductState.categories,
+                    lambda category: rx.el.a(
+                        category,
+                        href=f"/category/{category.lower()}",
+                        class_name="text-[#19325C] hover:text-[#C1A86F] font-medium capitalize",
+                    ),
                 ),
                 class_name="hidden md:flex items-center gap-6 font-['Playfair_Display']",
             ),

@@ -44,13 +44,28 @@ def hero_section() -> rx.Component:
     )
 
 
+def category_card(category: str) -> rx.Component:
+    icon_map = {
+        "birthday": "gift",
+        "anniversary": "heart",
+        "corporate": "briefcase",
+        "personalized": "edit-3",
+    }
+    icon_tag = icon_map.get(category.lower(), "tag")
+    return rx.el.a(
+        rx.el.div(
+            rx.icon(tag=icon_tag, class_name="h-10 w-10 text-[#C1A86F]"),
+            rx.el.h3(
+                category,
+                class_name="mt-4 text-lg font-['Playfair_Display'] font-bold text-[#19325C]",
+            ),
+            class_name="flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-gray-200",
+        ),
+        href=f"/category/{category.lower().replace(' ', '-')}",
+    )
+
+
 def categories_section() -> rx.Component:
-    categories = [
-        ("Birthday", "gift"),
-        ("Anniversary", "heart"),
-        ("Corporate", "briefcase"),
-        ("Personalized", "edit-3"),
-    ]
     return rx.el.section(
         rx.el.div(
             rx.el.h2(
@@ -58,20 +73,7 @@ def categories_section() -> rx.Component:
                 class_name="text-4xl font-['Playfair_Display'] font-black text-[#19325C] text-center",
             ),
             rx.el.div(
-                rx.foreach(
-                    categories,
-                    lambda cat: rx.el.a(
-                        rx.el.div(
-                            rx.icon(tag=cat[1], class_name="h-10 w-10 text-[#C1A86F]"),
-                            rx.el.h3(
-                                cat[0],
-                                class_name="mt-4 text-lg font-['Playfair_Display'] font-bold text-[#19325C]",
-                            ),
-                            class_name="flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-gray-200",
-                        ),
-                        href=f"/category/{cat[0].lower().replace(' ', '-')}",
-                    ),
-                ),
+                rx.foreach(ProductState.categories, category_card),
                 class_name="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8",
             ),
             class_name="container mx-auto px-4 py-20",
@@ -117,23 +119,29 @@ app = rx.App(
         ),
     ],
 )
-app.add_page(index, route="/")
+app.add_page(index, route="/", on_load=ProductState.on_load)
 app.add_page(login_page, route="/login")
 app.add_page(signup_page, route="/signup")
-app.add_page(products_page, route="/products")
+app.add_page(products_page, route="/products", on_load=ProductState.on_load)
 app.add_page(
     product_detail_page,
     route="/product/[product_id]",
-    on_load=ProductState.get_product_details,
+    on_load=[ProductState.get_product_details, ProductState.on_load],
 )
-app.add_page(category_page, route="/category/[category_name]")
-app.add_page(cart_page, route="/cart")
+app.add_page(
+    category_page, route="/category/[category_name]", on_load=ProductState.on_load
+)
+app.add_page(cart_page, route="/cart", on_load=ProductState.on_load)
 app.add_page(checkout_page, route="/checkout", on_load=AuthState.check_login)
 app.add_page(account_page, route="/account", on_load=AuthState.check_login)
 app.add_page(orders_page, route="/account/orders", on_load=AuthState.check_login)
 app.add_page(wishlist_page, route="/account/wishlist", on_load=AuthState.check_login)
 app.add_page(addresses_page, route="/account/addresses", on_load=AuthState.check_login)
-app.add_page(admin_page, route="/admin", on_load=AuthState.check_admin)
 app.add_page(
-    admin_products_page, route="/admin/products", on_load=AuthState.check_admin
+    admin_page, route="/admin", on_load=[AuthState.check_admin, ProductState.on_load]
+)
+app.add_page(
+    admin_products_page,
+    route="/admin/products",
+    on_load=[AuthState.check_admin, ProductState.on_load],
 )
